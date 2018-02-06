@@ -274,8 +274,6 @@ class TicTacToe:
 						win = self.__check_win(row_pos, col_pos, self.gametrix);
 
 						if win:
-							#self.__show_message("Congratulations Player ({})".format(self.current_player), True);
-							#self.winner = True
 							self.end_game = True
 							self.__draw_win("X")
 							
@@ -287,7 +285,5 @@ class TicTacToe:
 						self.end_game = False
 						self.__restart_board(False)
 
-
-	
 T = TicTacToe(3, 3);
 T.start_game();
