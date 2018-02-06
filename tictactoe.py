@@ -5,8 +5,6 @@ import os, numpy, pygame, math
 
 class TicTacToe:
 
-	winner = None
-
 	def __init__(self, d_x, d_y):
 		""" (dx, dy): tic tac toe dimension 
 			timeout: time each player has to play """
@@ -17,7 +15,6 @@ class TicTacToe:
 
 		# Game control variables
 		self.end_game = False
-		self.winner = False
 
 		# Font Settings
 		pygame.font.init()
@@ -73,6 +70,7 @@ class TicTacToe:
 		self.gametrix = [["0" for x in range(self.x)] for y in range(self.y)]
 		self.__draw_grid((0, 0, 0), 6)
 		pygame.display.flip()
+
 
 	def __restart_board(self, wait):
 		if wait:
@@ -148,11 +146,9 @@ class TicTacToe:
 				if self.gametrix[j][i] == "O":
 					self.__draw_circle(self.RED, (cell_center_x,cell_center_y))
 				elif self.gametrix[j][i] == "X":
-					#self.__draw_circle(self.GREEN, (cell_center_x, cell_center_y))	
 					self.__draw_cross(cell_center_point_a, cell_center_point_b)
 
 		pygame.display.flip()
-
 
 
 	def __check_win(self, cell_x, cell_y, matrix):
@@ -186,15 +182,9 @@ class TicTacToe:
 		# that intersect the current cell, then we just have to check if this is equal to the winning condition.
 		if row == winning_condition or column == winning_condition or r_diagonal == winning_condition or l_diagonal == winning_condition:
 			return True
+
 		return False
 
-
-	def __show_matrix(self):
-		print "Game Matrix: \n"
-		for row in self.gametrix:
-			print row
-		print "\n"
-		pass
 
 	def __draw_grid(self, color, lines_width):
 		### Draws a 3x3 grid on the screen, only works in a 300x300 window for now
@@ -204,18 +194,15 @@ class TicTacToe:
 		pygame.draw.line(self.screen, color, [0, self.height/3], [self.width, self.height/3], lines_width)
 		pygame.draw.line(self.screen, color, [0, self.height/3 + 100], [self.width, self.height/3 + 100], lines_width)
 
+
 	def __draw_circle(self, color, position):
 		pygame.draw.circle(self.screen, color, position, 50, 5)
 
+
 	def __draw_cross(self, p1, p2):
-		print "[{}, {}]".format(p1, p2)
 		pygame.draw.line(self.screen, self.BLACK, p1, p2, 6)
 		pygame.draw.line(self.screen, self.BLACK, (p1[0] + 100, p1[1] ), (p2[0] - 100, p1[1] + 100), 6)
 
-
-	#def __draw_cross(self, color, position):
-
-	#	pass
 
 	def __draw_win(self, winner):
 		# Shows the winner on the screen for 2 seconds
@@ -233,43 +220,36 @@ class TicTacToe:
 		
 	def __switch_turn(self):
 		if (self.current_player == "O"):
-			#print "Switching to player(X)"
 			self.current_player = "X"
 		else:
-			#print "Switching to player(O)"
 			self.current_player = "O"
 
 
-
-	def end_game(self):
-		exit()
-
 	def start_game(self):
-		# Initialize game
 
 		running = True
+
 		# Main Loop
 		while running:
 
-			if self.winner:
-				self.__draw_win("X")
-				self.winner = False
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					running = False
 				elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.end_game != True:
+					# When a MOUSEBUTTONDOWN / RMB event occurs, get the current mouse position, so we can
+					# then check in which cell the player is currently on and place that value into the 
+					# 2d array and draw it on the gui matrix as well
 
 					mouse_pos = pygame.mouse.get_pos()
-					print mouse_pos;
 					mouse_x, mouse_y = mouse_pos[0], mouse_pos[1]
 
-
-
+					# Map values along the game window to (0, 2), so it's easier to know in which cell of the
+					# 2d array we need to place the value on
 					col_pos = numpy.interp(mouse_x, [0, 300], [0, 2])
 					row_pos = numpy.interp(mouse_y, [0, 300], [0, 2])
 
-
+					# Floor or ceil and round the result of the code above so we don't get decimals values
 					if (mouse_y < 100):
 						row_pos = int(math.floor(row_pos))
 					else:
@@ -287,7 +267,7 @@ class TicTacToe:
 					# to try again
 					
 					if inserted:
-					#	# Update the grid everytime a move is inserted
+						# Update the grid everytime a move is inserted
 						self.__update_grid()
 
 						# Check if the winning conditions have been met
@@ -295,26 +275,17 @@ class TicTacToe:
 
 						if win:
 							#self.__show_message("Congratulations Player ({})".format(self.current_player), True);
-							self.winner = True
+							#self.winner = True
 							self.end_game = True
-							pass
+							self.__draw_win("X")
+							
 						else:	
 							self.__switch_turn()
-					else:
-						self.__show_message("Sorry, this cell is already taken or your move is invalid...please, try again.")
 					
 				elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 					if self.end_game:
 						self.end_game = False
 						self.__restart_board(False)
-
-
-	def __show_message(self, message, prompt=False):
-		os.system('clear')
-		print "[ {} ]".format(message)
-		#if prompt:
-		#	raw_input("")
-		#pass
 
 
 	
