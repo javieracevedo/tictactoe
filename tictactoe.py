@@ -287,7 +287,5 @@ class TicTacToe:
 						self.end_game = False
 						self.__restart_board(False)
 
-
-	
 T = TicTacToe(3, 3);
 T.start_game();
