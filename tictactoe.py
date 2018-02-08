@@ -33,8 +33,8 @@ class TicTacToe:
 
         # Window Settings and Initialization
         self.background_color = (255, 255, 255)
-        self.width = 300
-        self.height = 300
+        self.width = 500
+        self.height = 500
         self.game_caption = "Tic Tac Toe"
 
 
@@ -78,7 +78,7 @@ class TicTacToe:
         self.screen.fill(self.WHITE)
 
         # Draw grid on the screen
-        self.__draw_grid((0, 0, 0), 6)
+        self.__draw_grid((0, 0, 0), 10)
         self.end_game = False
 
         pygame.display.flip()
@@ -86,31 +86,36 @@ class TicTacToe:
 
 
     def __update_grid(self):
-        for i in range(len(self.gametrix)):
-            for j in range(len(self.gametrix)):
+        matrix_len = len(self.gametrix)
+        for i in range(matrix_len):
+            for j in range(matrix_len):
                 #print "({},{}) : {}".format(i, j, self.gametrix[j][i])
-                cell_center_x = int(numpy.interp(i, [0, 2], [0, 300]))
-                cell_center_y = int(numpy.interp(j, [0, 2], [0, 300]))
+
+                # This basicly converts the cell (x,y) to its equivalent in the board grid, by 
+                # interpolating the cell values to (0,300), the min and max of a 3x3 board
+                cell_center_x = int(numpy.interp(i, [0, 2], [0, self.width]))
+                cell_center_y = int(numpy.interp(j, [0, 2], [0, self.height]))
 
                 # Calculate center to draw circle
-                # Evaluate every x,y scenario as a tuple, to unify the conditionals
-                # TODO: Find a more efficient way of doing this
-                if (cell_center_x < 100):
-                    cell_center_x = 50
-                elif (cell_center_x >= 100 and cell_center_x < 200):
-                    cell_center_x = 150
-                elif (cell_center_x >= 200 and cell_center_x):
-                    cell_center_x = 250
+                if (cell_center_x < self.width/3):
+                    cell_center_x = ((self.width/3) - ((self.width/3) / 2))
+                    #print "KLK: " + str(cell_center_x)
+                elif (cell_center_x >= self.width/3 and cell_center_x < self.width/3 * 2):
+                    cell_center_x = ((self.width/3) + ((self.width/3) / 2))
+                elif (cell_center_x >= self.width/3 * 2):
+                    cell_center_x = ((self.width/3 * 2) + ((self.width/3) / 2))
 
-                if (cell_center_y < 100):
-                    cell_center_y = 50
-                elif (cell_center_y >= 100 and cell_center_y < 200):
-                    cell_center_y = 150
-                elif (cell_center_y >= 200):
-                    cell_center_y = 250
+                if (cell_center_y < self.width/3):
+                    cell_center_y = ((self.width/3) - ((self.width/3) / 2))
+                elif (cell_center_y >= self.width/3 and cell_center_y < self.width/3 * 2):
+                    cell_center_y = ((self.width/3) + ((self.width/3) / 2))
+                elif (cell_center_y >= self.width/3 * 2):
+                    cell_center_y = ((self.width/3 * 2) + ((self.width/3) / 2))
+
+                #print cell_center_x, cell_center_y
 
 
-                # Calculate the x values of the corner points in the current cell
+                # Calculate the y values of the corner points in the current cell
                 # to draw the cross
                 if (cell_center_x < 100):
                     cell_corner_point_a_x = 0
@@ -143,7 +148,8 @@ class TicTacToe:
                 if self.gametrix[j][i] == "O":
                     self.__draw_circle(self.RED, (cell_center_x,cell_center_y))
                 elif self.gametrix[j][i] == "X":
-                    self.__draw_cross(cell_center_point_a, cell_center_point_b)
+                    self.__draw_circle(self.BLUE, (cell_center_x,cell_center_y))
+                    #self.__draw_cross(cell_center_point_a, cell_center_point_b)
 
         pygame.display.flip()
 
@@ -197,12 +203,12 @@ class TicTacToe:
 
 
     def __draw_grid(self, color, lines_width):
-        ### Draws a 3x3 grid on the screen, only works in a 300x300 window for now
+        ### Draws a 3x3 grid on the screen
 
         pygame.draw.line(self.screen, color, [self.width/3, 0], [self.width/3, self.height], lines_width)
-        pygame.draw.line(self.screen, color, [self.width/3 + 100, 0], [self.width/3 + 100, self.height], lines_width)
+        pygame.draw.line(self.screen, color, [self.width/3 * 2, 0], [self.width/3 * 2, self.height], lines_width)
         pygame.draw.line(self.screen, color, [0, self.height/3], [self.width, self.height/3], lines_width)
-        pygame.draw.line(self.screen, color, [0, self.height/3 + 100], [self.width, self.height/3 + 100], lines_width)
+        pygame.draw.line(self.screen, color, [0, self.height/3 * 2], [self.width, self.height/3 * 2], lines_width)
 
 
     def __draw_circle(self, color, position):
@@ -248,16 +254,85 @@ class TicTacToe:
             self.current_player = "X"
         else:
             self.current_player = "O"
+        pass
 
 
     def start_game(self):
 
         running = True
-
+        lmb_pressed = False;
+        
         # Main Loop
         while running:
 
+            # When a MOUSEBUTTONDOWN / RMB event occurs, use the current mouse position (which we store on the 
+            # MOUSEBUTTONDOWN event ), so we can then check in which cell the player is currently on and place 
+            # that value into the 2d array and draw it on the gui matrix as well. 
+            # Note: Decided to implement the logic out here instead of the event itself because it is cleaner
+            # this way.
 
+            if lmb_pressed:
+                mouse_x, mouse_y = self.mouse_pos[0], self.mouse_pos[1]
+
+                lmb_pressed = True
+
+                cell_position = (0, 0)
+
+                # Row 1 events
+                if (mouse_x < self.width/3 and mouse_y < self.height/3):
+                    cell_position = 0, 0
+                elif ((mouse_x > self.width/3 and mouse_x < self.width/3 * 2) and mouse_y < self.height/3):
+                    cell_position = 0, 1
+                elif (mouse_x > self.width/3 * 2 and mouse_y <  self.height/3):
+                    cell_position = 0, 2
+
+                # Row 2 events
+                if (mouse_x < self.width/3 and (mouse_y > self.height/3 and mouse_y < self.height/3 * 2)):
+                    cell_position = 1, 0
+                elif ((mouse_x > self.width/3 and mouse_x < self.width/3 * 2) and (mouse_y > self.height/3 and mouse_y < self.height/3 * 2)):
+                    cell_position = 1, 1
+                elif (mouse_x > self.width/3 * 2 and (mouse_y > self.height/3 and mouse_y < self.height/3 * 2)):
+                    cell_position = 1, 2
+
+
+                # Row 3 events
+                if (mouse_x < self.width/3 and mouse_y > self.height/3 * 2):
+                    cell_position = 2, 0
+                elif ((mouse_x > self.width/3 and mouse_x < self.width/3 * 2) and mouse_y > self.height/3 * 2):
+                    cell_position = 2, 1
+                elif (mouse_x > self.width/3 * 2 and mouse_y >  self.height/3 * 2):
+                    cell_position = 2, 2
+
+
+                # Try to insert a move in the game matrix                   
+                inserted = self.__insert(self.current_player, cell_position[0], cell_position[1]) 
+
+                # If move could be inserted check if it is a winning move, if not tell the current player
+                # to try again
+                
+                if inserted:
+                    # Update the grid everytime a move is inserted
+                    self.__update_grid()
+
+                    # Check if the winning conditions have been met
+                    win = self.__check_win(cell_position[0], cell_position[1], self.gametrix);
+                    #win = False
+                    if win:
+                        self.winner = True
+                        self.end_game = True
+                        self.__draw_win("X")
+                        
+                    else:
+                        draw = self.__check_draw()    
+                        if draw:   
+                            self.end_game = True
+                            self.__draw_draw()
+                        self.__switch_turn()
+
+                lmb_pressed = False
+
+
+            # Event Handlinng
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -265,52 +340,9 @@ class TicTacToe:
                     # When a MOUSEBUTTONDOWN / RMB event occurs, get the current mouse position, so we can
                     # then check in which cell the player is currently on and place that value into the 
                     # 2d array and draw it on the gui matrix as well
+                    self.mouse_pos = pygame.mouse.get_pos()
+                    lmb_pressed = True
 
-                    mouse_pos = pygame.mouse.get_pos()
-                    mouse_x, mouse_y = mouse_pos[0], mouse_pos[1]
-
-                    # Map values along the game window to (0, 2), so it's easier to know in which cell of the
-                    # 2d array we need to place the value on
-                    col_pos = numpy.interp(mouse_x, [0, 300], [0, 2])
-                    row_pos = numpy.interp(mouse_y, [0, 300], [0, 2])
-
-                    # Floor or ceil and round the result of the code above so we don't get decimals values
-                    if (mouse_y < 100):
-                        row_pos = int(math.floor(row_pos))
-                    else:
-                        row_pos = int(round(row_pos))
-                
-                    if (mouse_x < 100):
-                        col_pos = int(math.floor(col_pos))
-                    else:
-                        col_pos = int(round(col_pos))
-
-                    # Try to insert a move in the game matrix                   
-                    inserted = self.__insert(self.current_player, row_pos, col_pos) 
-
-                    # If move could be inserted check if it is a winning move, if not tell the current player
-                    # to try again
-                    
-                    if inserted:
-                        # Update the grid everytime a move is inserted
-                        self.__update_grid()
-
-                        # Check if the winning conditions have been met
-                        win = self.__check_win(row_pos, col_pos, self.gametrix);
-
-                        if win:
-                            self.winner = True
-                            self.end_game = True
-                            self.__draw_win("X")
-                            
-                            
-                        
-                        else:
-                            draw = self.__check_draw()    
-                            if draw:   
-                                self.end_game = True
-                                self.__draw_draw()
-                            self.__switch_turn()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     if self.end_game:
                         self.end_game = False
