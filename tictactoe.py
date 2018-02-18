@@ -12,7 +12,9 @@ RED = (255,0,0)
 # Fonts
 pygame.font.init()
 winner_font = pygame.font.SysFont("monospace", 30)
+winner_font.set_bold(True)
 restart_font = pygame.font.SysFont("monospace", 15)
+restart_font.set_bold(True)
 
 # Window properties
 window_dimension = (600, 600)
